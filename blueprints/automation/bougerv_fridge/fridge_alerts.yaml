@@ -1,0 +1,353 @@
+blueprint:
+  name: BougeRV Fridge alerts
+  author: craigrob11
+  homeassistant:
+    min_version: "2025.2.0"
+  source_url: https://github.com/craigrob11/HA-BougeRV-Fridge/blob/main/blueprints/automation/bougerv_fridge/fridge_alerts.yaml
+  description: >-
+    Phone notifications for a BougeRV fridge set up with the **BougeRV Fridge**
+    integration: compartment getting warm, fridge or compartment switched off,
+    fridge offline (power cut, blown fuse, out of Bluetooth range), external
+    12 V supply lost, battery low, and optional "back to normal" messages.
+
+
+    Pick the fridge once; its entities are found automatically. This relies on
+    the default entity IDs, so if you have renamed the fridge's entity IDs
+    (not just their display names) some alerts may not find them.
+
+
+    The **External power** alert needs the hidden *External power* entity to be
+    enabled on the fridge's device page.
+  domain: automation
+  input:
+    fridge_section:
+      name: Fridge and phones
+      icon: mdi:fridge
+      input:
+        fridge:
+          name: Fridge
+          selector:
+            device:
+              filter:
+                - integration: bougerv_fridge
+        fridge_name:
+          name: Name used in messages
+          default: Fridge
+          selector:
+            text:
+        notify_devices:
+          name: Phones to notify
+          description: Phones with the Home Assistant Companion app.
+          selector:
+            device:
+              multiple: true
+              filter:
+                - integration: mobile_app
+        alert_level:
+          name: Alert level
+          description: >-
+            **Critical** sounds even when the phone is on silent or in Focus /
+            Do Not Disturb (iPhone: allow Critical Alerts for the Home Assistant
+            app; Android: plays on the alarm stream). **Time-sensitive** breaks
+            through Focus but respects silent mode. "Back to normal" messages
+            are always sent as normal notifications.
+          default: critical
+          selector:
+            select:
+              mode: list
+              options:
+                - label: Critical (sounds on silent)
+                  value: critical
+                - label: Time-sensitive
+                  value: time-sensitive
+                - label: Normal
+                  value: normal
+        all_clear:
+          name: Send "back to normal" messages
+          default: true
+          selector:
+            boolean:
+    warm_section:
+      name: Getting warm
+      icon: mdi:thermometer-alert
+      input:
+        warm_enabled:
+          name: Alert when a compartment gets warm
+          default: true
+          selector:
+            boolean:
+        warm_margin:
+          name: Degrees above setpoint
+          description: In the fridge's own unit (°C or °F).
+          default: 5
+          selector:
+            number:
+              min: 1
+              max: 20
+              step: 1
+              mode: slider
+        warm_minutes:
+          name: For at least (minutes)
+          description: A short delay stops alerts every time the lid is opened.
+          default: 15
+          selector:
+            number:
+              min: 1
+              max: 120
+              step: 1
+              unit_of_measurement: min
+    power_section:
+      name: Power and connection
+      icon: mdi:power-plug-off
+      input:
+        power_enabled:
+          name: Alert when the fridge or a compartment is switched off
+          default: true
+          selector:
+            boolean:
+        offline_enabled:
+          name: Alert when the fridge goes offline
+          description: >-
+            Catches the fridge losing power completely or going out of range.
+          default: true
+          selector:
+            boolean:
+        offline_minutes:
+          name: Offline for at least (minutes)
+          default: 10
+          selector:
+            number:
+              min: 2
+              max: 120
+              step: 1
+              unit_of_measurement: min
+        external_enabled:
+          name: Alert when the external 12 V supply is lost (battery models)
+          default: true
+          selector:
+            boolean:
+        battery_enabled:
+          name: Alert when the internal battery is low
+          default: true
+          selector:
+            boolean:
+        battery_threshold:
+          name: Low battery level
+          default: 20
+          selector:
+            number:
+              min: 5
+              max: 90
+              step: 5
+              unit_of_measurement: "%"
+
+mode: parallel
+max: 20
+
+trigger_variables:
+  fridge: !input fridge
+  warm_enabled: !input warm_enabled
+  warm_margin: !input warm_margin
+  power_enabled: !input power_enabled
+  offline_enabled: !input offline_enabled
+  external_enabled: !input external_enabled
+  battery_enabled: !input battery_enabled
+  battery_threshold: !input battery_threshold
+
+# Each trigger finds the fridge's entities from the chosen device. Patterns use
+# [.] rather than an escaped dot so they survive YAML and Jinja unchanged.
+triggers:
+  - id: left_warm
+    trigger: template
+    value_template: >-
+      {% set e = device_entities(fridge) %}
+      {% set t = e | select('match', '^sensor[.].*_left_temperature$') | first | default('') %}
+      {% set s = e | select('match', '^number[.].*_left_setpoint$') | first | default('') %}
+      {% set c = e | select('match', '^binary_sensor[.].*_left_compartment$') | first | default('') %}
+      {% set m = e | select('match', '^binary_sensor[.].*(?<!external)_power$') | first | default('') %}
+      {{ warm_enabled and t != '' and s != ''
+         and is_number(states(t)) and is_number(states(s))
+         and not is_state(c, 'off') and not is_state(m, 'off')
+         and states(t) | float > states(s) | float + warm_margin | float }}
+    for:
+      minutes: !input warm_minutes
+  - id: right_warm
+    trigger: template
+    value_template: >-
+      {% set e = device_entities(fridge) %}
+      {% set t = e | select('match', '^sensor[.].*_right_temperature$') | first | default('') %}
+      {% set s = e | select('match', '^number[.].*_right_setpoint$') | first | default('') %}
+      {% set c = e | select('match', '^binary_sensor[.].*_right_compartment$') | first | default('') %}
+      {% set m = e | select('match', '^binary_sensor[.].*(?<!external)_power$') | first | default('') %}
+      {{ warm_enabled and t != '' and s != ''
+         and is_number(states(t)) and is_number(states(s))
+         and not is_state(c, 'off') and not is_state(m, 'off')
+         and states(t) | float > states(s) | float + warm_margin | float }}
+    for:
+      minutes: !input warm_minutes
+  - id: main_off
+    trigger: template
+    value_template: >-
+      {% set m = device_entities(fridge) | select('match', '^binary_sensor[.].*(?<!external)_power$') | first | default('') %}
+      {{ power_enabled and is_state(m, 'off') }}
+    for:
+      minutes: 1
+  - id: left_off
+    trigger: template
+    value_template: >-
+      {% set e = device_entities(fridge) %}
+      {% set c = e | select('match', '^binary_sensor[.].*_left_compartment$') | first | default('') %}
+      {% set m = e | select('match', '^binary_sensor[.].*(?<!external)_power$') | first | default('') %}
+      {{ power_enabled and is_state(c, 'off') and is_state(m, 'on') }}
+    for:
+      minutes: 1
+  - id: right_off
+    trigger: template
+    value_template: >-
+      {% set e = device_entities(fridge) %}
+      {% set c = e | select('match', '^binary_sensor[.].*_right_compartment$') | first | default('') %}
+      {% set m = e | select('match', '^binary_sensor[.].*(?<!external)_power$') | first | default('') %}
+      {{ power_enabled and is_state(c, 'off') and is_state(m, 'on') }}
+    for:
+      minutes: 1
+  - id: offline
+    trigger: template
+    value_template: >-
+      {% set t = device_entities(fridge) | select('match', '^sensor[.].*_left_temperature$') | first | default('') %}
+      {{ offline_enabled and t != '' and is_state(t, 'unavailable') }}
+    for:
+      minutes: !input offline_minutes
+  - id: external_lost
+    trigger: template
+    value_template: >-
+      {% set x = device_entities(fridge) | select('match', '^binary_sensor[.].*_external_power$') | first | default('') %}
+      {{ external_enabled and is_state(x, 'off') }}
+    for:
+      minutes: 1
+  - id: battery_low
+    trigger: template
+    value_template: >-
+      {% set b = device_entities(fridge) | select('match', '^sensor[.].*_battery$') | first | default('') %}
+      {{ battery_enabled and is_number(states(b)) and states(b) | float < battery_threshold | float }}
+    for:
+      minutes: 5
+
+variables:
+  fridge_name: !input fridge_name
+  notify_devices: !input notify_devices
+  alert_level: !input alert_level
+  all_clear: !input all_clear
+  ents: "{{ device_entities(fridge) }}"
+  left_t: "{{ ents | select('match', '^sensor[.].*_left_temperature$') | first | default('') }}"
+  left_s: "{{ ents | select('match', '^number[.].*_left_setpoint$') | first | default('') }}"
+  left_c: "{{ ents | select('match', '^binary_sensor[.].*_left_compartment$') | first | default('') }}"
+  right_t: "{{ ents | select('match', '^sensor[.].*_right_temperature$') | first | default('') }}"
+  right_s: "{{ ents | select('match', '^number[.].*_right_setpoint$') | first | default('') }}"
+  right_c: "{{ ents | select('match', '^binary_sensor[.].*_right_compartment$') | first | default('') }}"
+  main_p: "{{ ents | select('match', '^binary_sensor[.].*(?<!external)_power$') | first | default('') }}"
+  ext_p: "{{ ents | select('match', '^binary_sensor[.].*_external_power$') | first | default('') }}"
+  batt: "{{ ents | select('match', '^sensor[.].*_battery$') | first | default('') }}"
+  side: "{{ 'Right' if trigger.id.startswith('right') else 'Left' }}"
+  temp_e: "{{ right_t if trigger.id.startswith('right') else left_t }}"
+  set_e: "{{ right_s if trigger.id.startswith('right') else left_s }}"
+  unit: "{{ state_attr(temp_e, 'unit_of_measurement') or '°' }}"
+  tag: "bougerv-{{ fridge }}-{{ trigger.id }}"
+  batt_text: >-
+    {{ ('Battery ' ~ states(batt) ~ '%.') if is_number(states(batt)) else '' }}
+  alert: >-
+    {% set t = trigger.id %}
+    {% if t in ['left_warm', 'right_warm'] %}
+      {{ {'title': '🌡️ ' ~ fridge_name ~ ' warming up',
+          'message': side ~ ' compartment is ' ~ states(temp_e) ~ unit ~ ' (set to '
+                     ~ states(set_e) ~ unit ~ ').'} }}
+    {% elif t == 'main_off' %}
+      {{ {'title': '⏻ ' ~ fridge_name ~ ' switched off',
+          'message': 'The fridge has been turned off.'} }}
+    {% elif t in ['left_off', 'right_off'] %}
+      {{ {'title': '⏻ ' ~ fridge_name ~ ': ' ~ side | lower ~ ' compartment off',
+          'message': 'The ' ~ side | lower ~ ' compartment has been turned off.'} }}
+    {% elif t == 'offline' %}
+      {{ {'title': '⚠️ ' ~ fridge_name ~ ' offline',
+          'message': 'No contact with the fridge. It may have lost power, '
+                     ~ 'blown a fuse or be out of Bluetooth range.'} }}
+    {% elif t == 'external_lost' %}
+      {{ {'title': '🔋 ' ~ fridge_name ~ ' on battery',
+          'message': ('The external 12 V supply has been lost. ' ~ batt_text) | trim} }}
+    {% else %}
+      {{ {'title': '🪫 ' ~ fridge_name ~ ' battery low',
+          'message': 'Internal battery is at ' ~ states(batt) ~ '%.'} }}
+    {% endif %}
+  push_data: >-
+    {% if alert_level == 'critical' %}
+      {{ {'tag': tag, 'ttl': 0, 'priority': 'high', 'channel': 'alarm_stream',
+          'push': {'interruption-level': 'critical',
+                   'sound': {'name': 'default', 'critical': 1, 'volume': 1.0}}} }}
+    {% elif alert_level == 'time-sensitive' %}
+      {{ {'tag': tag, 'ttl': 0, 'priority': 'high',
+          'push': {'interruption-level': 'time-sensitive'}} }}
+    {% else %}
+      {{ {'tag': tag} }}
+    {% endif %}
+
+actions:
+  - repeat:
+      for_each: "{{ notify_devices }}"
+      sequence:
+        - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+          continue_on_error: true
+          data:
+            title: "{{ alert.title }}"
+            message: "{{ alert.message }}"
+            data: "{{ push_data }}"
+  - condition: template
+    value_template: "{{ all_clear }}"
+  # Wait for whatever caused this alert to clear, then send "back to normal".
+  - wait_for_trigger:
+      - trigger: template
+        value_template: >-
+          {% set t = trigger.id %}
+          {% if t in ['left_warm', 'right_warm'] %}
+            {{ is_number(states(temp_e)) and is_number(states(set_e))
+               and states(temp_e) | float <= states(set_e) | float + 1 }}
+          {% elif t == 'main_off' %}
+            {{ is_state(main_p, 'on') }}
+          {% elif t == 'left_off' %}
+            {{ is_state(left_c, 'on') or is_state(main_p, 'off') }}
+          {% elif t == 'right_off' %}
+            {{ is_state(right_c, 'on') or is_state(main_p, 'off') }}
+          {% elif t == 'offline' %}
+            {{ not is_state(left_t, 'unavailable') }}
+          {% elif t == 'external_lost' %}
+            {{ is_state(ext_p, 'on') }}
+          {% else %}
+            {{ is_number(states(batt)) and states(batt) | float >= battery_threshold | float + 5 }}
+          {% endif %}
+    timeout:
+      hours: 24
+    continue_on_timeout: false
+  - variables:
+      clear_msg: >-
+        {% set t = trigger.id %}
+        {% if t in ['left_warm', 'right_warm'] %}
+          {{ side }} compartment back to {{ states(temp_e) }}{{ unit }}.
+        {% elif t == 'main_off' %}
+          The fridge is back on.
+        {% elif t in ['left_off', 'right_off'] %}
+          The {{ side | lower }} compartment is back on.
+        {% elif t == 'offline' %}
+          The fridge is back online.
+        {% elif t == 'external_lost' %}
+          External 12 V supply restored.
+        {% else %}
+          Internal battery back to {{ states(batt) }}%.
+        {% endif %}
+  - repeat:
+      for_each: "{{ notify_devices }}"
+      sequence:
+        - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+          continue_on_error: true
+          data:
+            title: "✅ {{ fridge_name }}"
+            message: "{{ clear_msg | trim }}"
+            data:
+              tag: "{{ tag }}"

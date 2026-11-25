@@ -62,6 +62,31 @@ Copy `custom_components/bougerv_fridge` into your Home Assistant `config/custom_
 The integration connects briefly each update (default every 30 s) and then
 disconnects, so the phone app can still be used in between.
 
+## Phone alerts (blueprint)
+
+A ready-made automation that sends phone notifications when:
+
+* a compartment is warmer than its setpoint by a set amount for a set time
+* the fridge or a compartment is switched off
+* the fridge goes **offline** (lost power, blown fuse, out of Bluetooth range)
+* the external 12 V supply is lost (battery models)
+* the internal battery is low
+
+plus optional "back to normal" messages.
+
+[![Import blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fcraigrob11%2FHA-BougeRV-Fridge%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fbougerv_fridge%2Ffridge_alerts.yaml)
+
+Then *Settings → Automations → Create automation → BougeRV Fridge alerts*, pick
+the fridge and your phones, and save.
+
+**Alert level** defaults to **Critical**, which sounds even when the phone is on
+silent or in Focus / Do Not Disturb:
+
+* **iPhone:** iOS Settings → Notifications → Home Assistant → allow **Critical Alerts**.
+* **Android:** critical alerts play on the alarm stream.
+
+The External power alert needs the hidden *External power* entity enabled.
+
 ## Coming from the early test builds
 
 The pre-release test builds used the integration name `bougerv`. Delete that

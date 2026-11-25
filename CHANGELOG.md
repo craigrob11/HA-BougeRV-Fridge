@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **Phone alerts blueprint**: warm compartment, switched off, offline, external
+  power lost, low battery, with optional "back to normal" messages. Critical
+  alert level (sounds on silent) by default.
+
 ## 1.0.0 (first public release)
 
 Changes since the private V3 test builds:

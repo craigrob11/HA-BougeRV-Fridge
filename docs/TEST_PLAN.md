@@ -78,3 +78,27 @@ Tip: a 1-minute gap between steps makes the recording easy to read.
 ## 9. Friend's fridge (no battery)
 - [ ] Section 1, answering "no battery": no battery entities created.
 - [ ] Section 3 controls all work.
+
+## 10. Phone alerts blueprint
+Setup: import the blueprint from the README button, create an automation from
+it, pick the fridge and your phone, alert level **Critical**. On the iPhone check
+iOS Settings → Notifications → Home Assistant → Critical Alerts is on.
+For quick testing set *For at least* to 1 min and *Offline* to 2 min, then set
+them back afterwards.
+
+- [ ] **Warm:** set the warm margin to 2° for the test, then set the left
+      setpoint 3° or more *below* the current left temperature. The alert
+      arrives after the delay and sounds even with the phone on silent.
+- [ ] Put the setpoint back: "back to normal" arrives once within 1° of setpoint.
+- [ ] **Compartment off:** turn the left compartment off → alert after 1 min.
+      Back on → all clear.
+- [ ] **Main power off** → alert after 1 min. Back on → all clear.
+- [ ] **Offline:** pull the fridge's supply (with no battery fitted, or the
+      battery removed) or carry it out of Bluetooth range → alert after the
+      offline delay. (The fridge's own power button only triggers "switched off".)
+      Restore → "back online".
+- [ ] **External power lost** (battery fitted, External power entity enabled):
+      unplug 12 V → alert after 1 min. Plug back in → all clear.
+- [ ] **Battery low:** set the threshold just above the current % → alert after
+      5 min; set it back.
+- [ ] Alerts replace rather than stack (same tag) and the wording reads well.
