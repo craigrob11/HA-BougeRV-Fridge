@@ -5,6 +5,10 @@
 - **Phone alerts blueprint**: warm compartment, switched off, offline, external
   power lost, low battery, with optional "back to normal" messages. Critical
   alert level (sounds on silent) by default.
+- Fridges without the internal battery: if the battery option is ticked by
+  mistake, battery sensors now show unavailable instead of 0 % (which would
+  also have triggered a false low-battery alert). Found from a tester's
+  diagnostics (CRD2 2.0, firmware 1.0.1).
 
 ## 1.0.0 (first public release)
 

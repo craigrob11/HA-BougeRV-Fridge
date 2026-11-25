@@ -218,6 +218,28 @@ def test_assembler_resyncs_after_garbage():
     assert [f.raw for f in out] == [good]
 
 
+NO_BATTERY = [
+    p.parse_frame(bytes.fromhex(h))
+    for h in json.loads((Path(__file__).parent / "no_battery_frames.json").read_text())
+]
+
+
+def test_no_battery_fridge_reports_no_battery():
+    """CRD2 2.0 (firmware 1.0.1) without the battery: zero-filled telemetry frame."""
+    state = p.decode_state(NO_BATTERY)
+    assert state["battery_present"] is False
+    assert "battery" not in state and "battery_seen" not in state
+    assert state["firmware"] == "1.0.1"
+    assert state["left_actual"] in (-20, -19) and state["right_setpoint"] in (-20, 2)
+
+
+def test_battery_fridge_reports_battery_present():
+    full = [p.parse_frame(r) for r in FRAMES if p.parse_frame(r).fields().get(p.F_PORT_POWER) is not None]
+    assert full
+    for f in full:
+        assert p.decode_state([f])["battery_present"] is True
+
+
 if __name__ == "__main__":
     import sys
 

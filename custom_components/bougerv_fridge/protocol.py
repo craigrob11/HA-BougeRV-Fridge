@@ -277,6 +277,17 @@ def decode_battery_detail(block: bytes) -> dict[str, object]:
     return out
 
 
+def _no_battery(f: dict[int, object]) -> bool:
+    """True for the zero-filled telemetry frame a fridge without a battery sends.
+
+    Seen from a CRD2 2.0 with no battery: battery firmware (0x41) is an empty
+    string and the cell block (0x37) is empty. With a battery fitted the
+    firmware is e.g. "0.1.8" and the cell block is 35 bytes. Field 0x32 is NOT
+    a reliable indicator (it is sometimes false with a battery fitted).
+    """
+    return f.get(F_BATTERY_FIRMWARE) == "" or f.get(F_BATTERY_DETAIL) == b""
+
+
 def decode_state(frames: list[Frame]) -> dict[str, object]:
     """Map frames to the friendly keys used by the Home Assistant entities.
 
@@ -318,7 +329,12 @@ def decode_state(frames: list[Frame]) -> dict[str, object]:
             if isinstance(f.get(F_FIRMWARE), str):
                 out["firmware"] = f[F_FIRMWARE]
         elif frame.cmd == CMD_TELEMETRY:
+            if _no_battery(f):
+                # Fridges without the battery still send this frame, all zeros.
+                out["battery_present"] = False
+                continue
             out["battery_seen"] = True
+            out["battery_present"] = True
             detail = f.get(F_BATTERY_DETAIL)
             if isinstance(detail, bytes):
                 d = decode_battery_detail(detail)

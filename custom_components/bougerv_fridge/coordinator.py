@@ -152,5 +152,9 @@ class BougeRVCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         update = decode_state(frames)
         if update.pop("battery_seen", False):
             self._battery_seen_at = time.monotonic()
+        if update.get("battery_present") is False:
+            # Fridge reports no battery: battery entities go unavailable at
+            # once rather than showing 0 % (which would trip low-battery alerts).
+            self._battery_seen_at = None
         self._state.update(update)
         return dict(self._state)
