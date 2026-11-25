@@ -1,0 +1,181 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Choose your BougeRV fridge",
+        "description": "Close the BougeRV app on your phone first: the fridge only accepts one Bluetooth connection at a time.",
+        "data": {
+          "address": "Fridge"
+        }
+      },
+      "setup": {
+        "title": "Set up {name}",
+        "description": "Tick the box if the optional BougeRV internal battery is fitted: this adds battery level, charging and input-power sensors (changeable later under Configure).\n\nThe temperature unit is sent to the fridge, so its own display and the setpoint sliders use it. You can change it later with the Temperature unit control.",
+        "data": {
+          "has_battery": "Internal battery is fitted",
+          "initial_unit": "Temperature unit"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This fridge is already set up.",
+      "no_devices_found": "No BougeRV fridge found. Make sure it is switched on, within Bluetooth range of Home Assistant (or a Bluetooth proxy), and that the BougeRV phone app is closed."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "BougeRV options",
+        "data": {
+          "has_battery": "Internal battery is fitted",
+          "scan_interval": "Update interval (seconds)"
+        },
+        "data_description": {
+          "scan_interval": "How often to read the fridge. Each read briefly connects over Bluetooth, during which the phone app cannot connect."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "main_power": {
+        "name": "Power"
+      },
+      "left_power": {
+        "name": "Left compartment"
+      },
+      "right_power": {
+        "name": "Right compartment"
+      },
+      "charging": {
+        "name": "Charging"
+      },
+      "compressor": {
+        "name": "Compressor"
+      },
+      "external_power": {
+        "name": "External power"
+      }
+    },
+    "number": {
+      "left_setpoint": {
+        "name": "Left setpoint"
+      },
+      "right_setpoint": {
+        "name": "Right setpoint"
+      }
+    },
+    "select": {
+      "mode": {
+        "name": "Cooling mode"
+      },
+      "protection": {
+        "name": "Battery protection"
+      },
+      "units": {
+        "name": "Temperature unit"
+      }
+    },
+    "sensor": {
+      "left_actual": {
+        "name": "Left temperature"
+      },
+      "right_actual": {
+        "name": "Right temperature"
+      },
+      "input_voltage": {
+        "name": "Input voltage"
+      },
+      "dc_input": {
+        "name": "DC input"
+      },
+      "usb_c_input": {
+        "name": "USB-C input"
+      },
+      "port_power": {
+        "name": "Total port power"
+      },
+      "input_3c": {
+        "name": "Unidentified input 3C"
+      },
+      "input_3d": {
+        "name": "Unidentified input 3D"
+      },
+      "input_3e": {
+        "name": "Unidentified input 3E"
+      },
+      "pack_voltage": {
+        "name": "Battery voltage"
+      },
+      "battery_current": {
+        "name": "Battery current"
+      },
+      "battery_power": {
+        "name": "Battery power"
+      },
+      "battery_temperature": {
+        "name": "Battery temperature"
+      },
+      "cell_min": {
+        "name": "Lowest cell voltage"
+      },
+      "cell_max": {
+        "name": "Highest cell voltage"
+      },
+      "cell_1": {
+        "name": "Cell 1 voltage"
+      },
+      "cell_2": {
+        "name": "Cell 2 voltage"
+      },
+      "cell_3": {
+        "name": "Cell 3 voltage"
+      },
+      "cell_4": {
+        "name": "Cell 4 voltage"
+      },
+      "cell_5": {
+        "name": "Cell 5 voltage"
+      }
+    },
+    "switch": {
+      "main_power": {
+        "name": "Power"
+      },
+      "left_power": {
+        "name": "Left compartment"
+      },
+      "right_power": {
+        "name": "Right compartment"
+      },
+      "live_capture": {
+        "name": "Live capture"
+      }
+    },
+    "button": {
+      "marker": {
+        "name": "Add capture marker"
+      }
+    },
+    "text": {
+      "capture_note": {
+        "name": "Capture note"
+      }
+    }
+  },
+  "exceptions": {
+    "not_in_range": {
+      "message": "BougeRV fridge {address} is not in range of any Bluetooth adapter or proxy."
+    },
+    "command_failed": {
+      "message": "Could not send the command to the fridge: {error}"
+    },
+    "state_unknown": {
+      "message": "The fridge's current compartment state is not known yet; try again after the next update."
+    },
+    "both_compartments_off": {
+      "message": "Turning both compartments off individually has not been tested yet. Use the main Power switch instead."
+    }
+  }
+}

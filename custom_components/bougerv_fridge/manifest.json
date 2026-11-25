@@ -1,0 +1,16 @@
+{
+  "domain": "bougerv_fridge",
+  "name": "BougeRV Fridge",
+  "bluetooth": [
+    { "local_name": "SYZ-CRD*", "connectable": true }
+  ],
+  "codeowners": ["@craigrob11"],
+  "config_flow": true,
+  "dependencies": ["bluetooth_adapters"],
+  "documentation": "https://github.com/craigrob11/HA-BougeRV-Fridge",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/craigrob11/HA-BougeRV-Fridge/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}
