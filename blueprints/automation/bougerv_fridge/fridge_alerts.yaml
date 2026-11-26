@@ -16,8 +16,8 @@ blueprint:
     (not just their display names) some alerts may not find them.
 
 
-    The **External power** alert needs the hidden *External power* entity to be
-    enabled on the fridge's device page.
+    The **External power** alert needs the *External power* entity enabled
+    (it is by default from version 1.1.0).
   domain: automation
   input:
     fridge_section:
