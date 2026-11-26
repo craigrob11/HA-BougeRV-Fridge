@@ -137,6 +137,9 @@
       },
       "solar_input": {
         "name": "Solar input"
+      },
+      "usb_output": {
+        "name": "USB output"
       }
     },
     "switch": {

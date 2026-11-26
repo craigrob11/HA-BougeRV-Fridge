@@ -34,6 +34,21 @@ class BougeRVSensorDescription(SensorEntityDescription):
     temperature: bool = False
 
 
+INPUT_KEYS = ("dc_input", "usb_c_input", "solar_input", "input_3c", "input_3e")
+
+
+def _usb_output(data: dict[str, Any]) -> int | None:
+    """Power drawn from the USB outlets.
+
+    Field 0x42 is the total through every port: the inputs plus the outlets
+    (confirmed by charging a phone in the van), so the outlets are the rest.
+    """
+    total = data.get("port_power")
+    if total is None:
+        return None
+    return max(0, total - sum(data.get(k) or 0 for k in INPUT_KEYS))
+
+
 def _get(key: str) -> Callable[[dict[str, Any]], Any]:
     return lambda data: data.get(key)
 
@@ -174,6 +189,15 @@ SENSORS: tuple[BougeRVSensorDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
         value_fn=_get("port_power"),
+        battery=True,
+    ),
+    BougeRVSensorDescription(
+        key="usb_output",
+        translation_key="usb_output",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        value_fn=_usb_output,
         battery=True,
     ),
     BougeRVSensorDescription(

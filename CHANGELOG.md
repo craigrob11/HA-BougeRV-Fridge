@@ -6,6 +6,7 @@
   command (0 left off, 1 left on, 2 right off, 3 right on), not the bitmask it
   reports. The old switches turned the wrong side off.
 - **Solar input** sensor (field 0x3D), confirmed in van tests.
+- **USB output** sensor: total port power (0x42) minus the inputs.
 - Compressor and External power are confirmed and now enabled by default.
 - Hidden **Test command** tool for decoding raw settings.
 
