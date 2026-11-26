@@ -54,7 +54,6 @@ class TestCommand(BougeRVEntity, TextEntity):
     _attr_entity_registry_enabled_default = False  # hidden test tool
     _attr_entity_category = EntityCategory.CONFIG
     _attr_native_max = 20
-    _attr_pattern = r"^\s*[0-9A-Fa-f]{1,2}\s+[0-9A-Fa-f]{1,2}\s*$"
 
     def __init__(self, coordinator) -> None:
         super().__init__(coordinator, "test_command")
