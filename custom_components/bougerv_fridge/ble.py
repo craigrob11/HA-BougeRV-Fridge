@@ -131,7 +131,7 @@ class BougeRVClient:
     async def _disconnect(self, client: BleakClient) -> None:
         try:
             await client.disconnect()
-        except Exception:  # noqa: BLE001 - disconnect failures are harmless
+        except Exception:
             _LOGGER.debug("%s: error while disconnecting", self.address, exc_info=True)
 
     async def _send(self, client: BleakClient, payload: bytes) -> None:

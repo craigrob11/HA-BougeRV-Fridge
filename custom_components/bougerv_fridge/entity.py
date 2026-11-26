@@ -17,9 +17,7 @@ def _battery_version(coordinator: BougeRVCoordinator) -> str | None:
 
 
 class BougeRVEntity(CoordinatorEntity[BougeRVCoordinator]):
-    """Common device info and availability.
-
-    """
+    """Common device info and availability."""
 
     _attr_has_entity_name = True
     battery_entity = False

@@ -161,6 +161,9 @@
     "text": {
       "capture_note": {
         "name": "Capture note"
+      },
+      "test_command": {
+        "name": "Test command"
       }
     }
   },
@@ -176,6 +179,9 @@
     },
     "both_compartments_off": {
       "message": "Turning both compartments off individually has not been tested yet. Use the main Power switch instead."
+    },
+    "bad_test_command": {
+      "message": "Type the field and value in hex, separated by a space, for example: 12 01"
     }
   }
 }
