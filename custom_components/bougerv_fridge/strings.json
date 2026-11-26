@@ -29,10 +29,12 @@
         "title": "BougeRV options",
         "data": {
           "has_battery": "Internal battery is fitted",
-          "scan_interval": "Update interval (seconds)"
+          "scan_interval": "Update interval (seconds)",
+          "test_tools": "Show test tools"
         },
         "data_description": {
-          "scan_interval": "How often to read the fridge. Each read briefly connects over Bluetooth, during which the phone app cannot connect."
+          "scan_interval": "How often to read the fridge. Each read briefly connects over Bluetooth, during which the phone app cannot connect.",
+          "test_tools": "Adds Live capture, Add capture marker, Capture note and Test command, for decoding how the fridge works. Leave off for normal use."
         }
       }
     }

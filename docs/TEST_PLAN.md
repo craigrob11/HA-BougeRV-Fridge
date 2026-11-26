@@ -5,7 +5,8 @@ Everything is done in Home Assistant: no nRF Connect, no copying logs.
 ## How a capture works
 
 On the BougeRV device page (*Settings → Devices & services → BougeRV Fridge*)
-the **Configuration** section has three test tools:
+the **Configuration** section has the test tools, once **Show test tools** is
+turned on under *Configure*:
 
 | Control | What it does |
 |---|---|
@@ -13,10 +14,11 @@ the **Configuration** section has three test tools:
 | **Add capture marker** (button) | Stamps `MARKER 1`, `MARKER 2` … into the recording at that moment. |
 | **Capture note** (text) | Whatever you type is stamped into the recording, e.g. `lid open left`. |
 
-These are **hidden by default**. Enable them first: device page →
-**"+N entities not shown"** → tap each → settings cog → **Enabled**. Do the same
-for **Compressor**, **External power**, **Battery temperature** and the three
-**Unidentified input** sensors.
+| **Test command** (text) | Sends one raw setting, typed as field and value in hex, e.g. `12 01`. |
+
+Some diagnostic sensors (Battery temperature, cell voltages, the unidentified
+inputs) are disabled by default: device page → **Diagnostic** card →
+**"+N disabled entities"** → tap each → settings cog → **Enabled**.
 
 When a test is done: three-dot menu → **Download diagnostics**, and send me the
 file. Each message in it lists only the fields that **changed**, next to your

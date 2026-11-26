@@ -27,9 +27,10 @@ async def async_setup_entry(
             MainPowerSwitch(coordinator),
             CompartmentSwitch(coordinator, LEFT_BIT, "left_power", "left_on"),
             CompartmentSwitch(coordinator, RIGHT_BIT, "right_power", "right_on"),
-            LiveCaptureSwitch(coordinator),
         ]
     )
+    if coordinator.test_tools:
+        async_add_entities([LiveCaptureSwitch(coordinator)])
 
 
 class MainPowerSwitch(BougeRVEntity, SwitchEntity):
@@ -97,7 +98,6 @@ class LiveCaptureSwitch(BougeRVEntity, SwitchEntity):
     """
 
     _attr_translation_key = "live_capture"
-    _attr_entity_registry_enabled_default = False  # hidden test tool
     _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(self, coordinator) -> None:

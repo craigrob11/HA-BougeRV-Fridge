@@ -21,7 +21,7 @@ ESPHome Bluetooth proxy (with active connections enabled).
 | Cooling mode | select | Eco / Max |
 | Battery protection | select | Low / Medium / High cut-off |
 | Temperature unit | select | °C / °F (changes the fridge display too) |
-| Compressor | binary sensor (diagnostic, hidden) | Running / not running *(being confirmed)* |
+| Compressor | binary sensor (diagnostic) | Running / not running |
 
 **With the optional BougeRV internal battery** (choose this when adding the fridge,
 or later under *Configure*):
@@ -30,9 +30,10 @@ or later under *Configure*):
 |---|---|---|
 | Battery | sensor | Charge level in % |
 | Charging | binary sensor | On when any input is supplying power |
-| DC input / USB-C input | sensor | Watts going in |
+| DC input / Solar input / USB-C input | sensor | Watts going in |
+| USB output | sensor | Watts drawn from the USB outlets |
 | Battery voltage / Battery current / Battery power | sensor | Current is + charging, − discharging |
-| External power | binary sensor (diagnostic, hidden) | 12 V supply connected *(being confirmed)* |
+| External power | binary sensor (diagnostic) | 12 V supply connected |
 | Lowest / highest cell voltage | sensor (diagnostic) | |
 | Battery temperature | sensor (diagnostic, hidden) | |
 | Cell 1–5 voltage | sensor (diagnostic, disabled) | |
@@ -85,8 +86,6 @@ silent or in Focus / Do Not Disturb:
 * **iPhone:** iOS Settings → Notifications → Home Assistant → allow **Critical Alerts**.
 * **Android:** critical alerts play on the alarm stream.
 
-The External power alert needs the hidden *External power* entity enabled.
-
 ## Coming from the early test builds
 
 The pre-release test builds used the integration name `bougerv`. Delete that
@@ -101,19 +100,23 @@ this one and set the fridge up again.
   This contains the last 2000 Bluetooth messages, with the fields that changed
   in each. Please attach it to any issue.
 
-### Hidden test tools
+### Test tools
 
-Some entities are **hidden (disabled) by default**: the test tools below, and
-sensors that are still being confirmed. To use them, open the device page,
-tap **"+N entities not shown"**, select the entity → settings cog → **Enabled**.
+For decoding how the fridge works (for example to add support for another
+model), turn on **Show test tools** under *Settings → Devices & services →
+BougeRV Fridge → Configure*. They appear in the device's **Configuration** card:
 
 * **Live capture** (switch): holds the connection open and records every
   message as it happens. Turns itself off after 30 minutes; the phone app
   can't connect meanwhile.
 * **Add capture marker** (button) and **Capture note** (text): label what you
   were doing at that moment in the recording.
+* **Test command** (text): sends one raw setting, typed as field and value in
+  hex (e.g. `12 01`). Only use it if you know what the field does.
 * Then **Download diagnostics**: each message shows only the fields that
   changed, next to your markers and notes.
+
+Turn the option off again for normal use; the tools are removed.
 
 ## Known limits
 

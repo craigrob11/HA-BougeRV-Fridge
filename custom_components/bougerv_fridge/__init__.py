@@ -12,7 +12,7 @@ from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 
 from .ble import BougeRVClient
-from .const import CONF_INITIAL_UNIT, DOMAIN
+from .const import CONF_INITIAL_UNIT, DOMAIN, TEST_TOOL_KEYS
 from .coordinator import BougeRVCoordinator
 from .protocol import cmd_unit
 
@@ -71,7 +71,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: BougeRVConfigEntry) -> b
     entry.runtime_data = coordinator
 
     if not coordinator.has_battery:
-        _remove_battery_entities(hass, entry, address)
+        _remove_entities(hass, entry, address, BATTERY_KEYS)
+    if not coordinator.test_tools:
+        _remove_entities(hass, entry, address, TEST_TOOL_KEYS)
 
     await _apply_initial_unit(hass, entry, coordinator)
 
@@ -114,12 +116,12 @@ async def _apply_initial_unit(
     )
 
 
-def _remove_battery_entities(
-    hass: HomeAssistant, entry: ConfigEntry, address: str
+def _remove_entities(
+    hass: HomeAssistant, entry: ConfigEntry, address: str, keys: tuple[str, ...]
 ) -> None:
-    """Battery switched off in the options: delete its entities rather than leave them unavailable."""
+    """Option switched off: delete those entities rather than leave them unavailable."""
     registry = er.async_get(hass)
-    wanted = {f"{DOMAIN}_{address}_{key}" for key in BATTERY_KEYS}
+    wanted = {f"{DOMAIN}_{address}_{key}" for key in keys}
     for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
         if entity.unique_id in wanted:
             registry.async_remove(entity.entity_id)

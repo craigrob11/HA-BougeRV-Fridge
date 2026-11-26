@@ -22,6 +22,7 @@ from .const import (
     CONF_HAS_BATTERY,
     CONF_INITIAL_UNIT,
     CONF_SCAN_INTERVAL,
+    CONF_TEST_TOOLS,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     LOCAL_NAME_PREFIX,
@@ -37,6 +38,7 @@ OPTIONS_SCHEMA = vol.Schema(
         vol.Required(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): vol.All(
             vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL)
         ),
+        vol.Required(CONF_TEST_TOOLS, default=False): bool,
     }
 )
 

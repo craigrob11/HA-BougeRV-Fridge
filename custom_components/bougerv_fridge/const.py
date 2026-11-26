@@ -13,6 +13,10 @@ LOCAL_NAME_PREFIX = "SYZ-CRD"
 CONF_HAS_BATTERY = "has_battery"
 CONF_SCAN_INTERVAL = "scan_interval"
 CONF_INITIAL_UNIT = "initial_unit"
+CONF_TEST_TOOLS = "test_tools"
+
+# Unique-ID suffixes of the test tools, which only exist with CONF_TEST_TOOLS.
+TEST_TOOL_KEYS = ("live_capture", "marker", "capture_note", "test_command")
 
 DEFAULT_SCAN_INTERVAL = 30  # seconds
 MIN_SCAN_INTERVAL = 15

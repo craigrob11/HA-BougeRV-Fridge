@@ -19,16 +19,16 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    async_add_entities(
-        [CaptureNote(entry.runtime_data), TestCommand(entry.runtime_data)]
-    )
+    if entry.runtime_data.test_tools:
+        async_add_entities(
+            [CaptureNote(entry.runtime_data), TestCommand(entry.runtime_data)]
+        )
 
 
 class CaptureNote(BougeRVEntity, TextEntity):
     """Whatever is typed here is stamped into the capture history."""
 
     _attr_translation_key = "capture_note"
-    _attr_entity_registry_enabled_default = False  # hidden test tool
     _attr_entity_category = EntityCategory.CONFIG
     _attr_native_max = 100
 
@@ -51,7 +51,6 @@ class TestCommand(BougeRVEntity, TextEntity):
     """
 
     _attr_translation_key = "test_command"
-    _attr_entity_registry_enabled_default = False  # hidden test tool
     _attr_entity_category = EntityCategory.CONFIG
     _attr_native_max = 20
 

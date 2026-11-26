@@ -8,7 +8,10 @@
 - **Solar input** sensor (field 0x3D), confirmed in van tests.
 - **USB output** sensor: total port power (0x42) minus the inputs.
 - Compressor and External power are confirmed and now enabled by default.
-- Hidden **Test command** tool for decoding raw settings.
+- **Show test tools** option under *Configure* (off by default). The test
+  tools only exist when it is on, and include a new **Test command** for
+  sending raw settings. Turn it on again after updating if you use them.
+- No lid sensor: van tests showed the fridge does not report the lid or light.
 
 - **Phone alerts blueprint**: warm compartment, switched off, offline, external
   power lost, low battery, with optional "back to normal" messages. Critical

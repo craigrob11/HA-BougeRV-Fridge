@@ -16,7 +16,8 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    async_add_entities([MarkerButton(entry.runtime_data)])
+    if entry.runtime_data.test_tools:
+        async_add_entities([MarkerButton(entry.runtime_data)])
 
 
 class MarkerButton(BougeRVEntity, ButtonEntity):
@@ -27,7 +28,6 @@ class MarkerButton(BougeRVEntity, ButtonEntity):
     """
 
     _attr_translation_key = "marker"
-    _attr_entity_registry_enabled_default = False  # hidden test tool
     _attr_entity_category = EntityCategory.CONFIG
 
     def __init__(self, coordinator) -> None:

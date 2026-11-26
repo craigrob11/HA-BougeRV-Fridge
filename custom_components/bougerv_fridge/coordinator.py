@@ -20,6 +20,7 @@ from .const import (
     BATTERY_STALE_POLLS,
     CONF_HAS_BATTERY,
     CONF_SCAN_INTERVAL,
+    CONF_TEST_TOOLS,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     LIVE_CAPTURE_LIMIT,
@@ -54,6 +55,7 @@ class BougeRVCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self.client = client
         self.has_battery: bool = entry.options.get(CONF_HAS_BATTERY, False)
+        self.test_tools: bool = entry.options.get(CONF_TEST_TOOLS, False)
         self._state: dict[str, Any] = {}
         self._battery_seen_at: float | None = None
         self._live_timer: CALLBACK_TYPE | None = None
