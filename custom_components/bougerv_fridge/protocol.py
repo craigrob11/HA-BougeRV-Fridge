@@ -49,14 +49,14 @@ F_RIGHT_ACTUAL = 0x04
 F_RIGHT_SETPOINT = 0x05
 F_UNIT = 0x06  # enum: 0 = °C, 1 = °F
 F_PROTECTION = 0x07  # enum: 0 = Low, 1 = Medium, 2 = High
-F_COMPRESSOR = (
-    0x08  # enum 0/1 - UNCONFIRMED: changes on its own like a compressor cycling
-)
-F_EXTERNAL_POWER = (
-    0x09  # bool - UNCONFIRMED: false whenever the 12 V supply was removed
-)
+F_COMPRESSOR = 0x08  # enum 0/1: 1 = compressor running (confirmed in van tests)
+F_EXTERNAL_POWER = 0x09  # bool: 12 V supply connected (confirmed in van tests)
 F_MODE = 0x0B  # enum: 0 = Eco, 1 = Max
-F_COMPARTMENTS = 0x12  # enum bitmask: bit0 = left on, bit1 = right on
+# Compartments. Reported as a bitmask (bit0 = left on, bit1 = right on), but
+# written as one per-side command: 0 = left off, 1 = left on, 2 = right off,
+# 3 = right on (confirmed in van tests). The fridge will not leave both sides
+# off: turning off the last side that is on switches the other one on.
+F_COMPARTMENTS = 0x12
 F_FIRMWARE = 0x10  # text, fridge firmware e.g. "1.0.2"
 F_INPUT_VOLTAGE = 0x16  # int32, volts x10
 
@@ -69,9 +69,9 @@ F_BATTERY_CURRENT = (
 )
 F_BATTERY_DETAIL = 0x37  # raw block, see decode_battery_detail()
 F_USB_C_INPUT = 0x3B  # int32, watts
-F_INPUT_3C = 0x3C  # int32, watts - not yet identified (solar candidate)
-F_INPUT_3D = 0x3D  # int32, watts - not yet identified (solar candidate)
-F_INPUT_3E = 0x3E  # int32, watts - not yet identified (solar candidate)
+F_INPUT_3C = 0x3C  # int32, watts - not yet identified, always 0 so far
+F_SOLAR_INPUT = 0x3D  # int32, watts (confirmed in van tests)
+F_INPUT_3E = 0x3E  # int32, watts - not yet identified, always 0 so far
 F_DC_INPUT = 0x3F  # int32, watts
 F_BATTERY_FIRMWARE = 0x41  # text, e.g. "0.1.8"
 F_PORT_POWER = 0x42  # int32, watts - total through all ports, in AND out
@@ -119,11 +119,10 @@ def cmd_main_power(on: bool) -> bytes:
     return _write(F_MAIN_POWER, TYPE_BOOL, bytes([1 if on else 0]))
 
 
-def cmd_compartments(mask: int) -> bytes:
-    if mask not in (1, 2, 3):
-        # 0 (both compartments off) has never been captured from the app.
-        raise ProtocolError(f"compartment mask {mask} not supported")
-    return _write(F_COMPARTMENTS, TYPE_ENUM, bytes([mask]))
+def cmd_compartment(right: bool, on: bool) -> bytes:
+    """Switch one compartment: 0 left off, 1 left on, 2 right off, 3 right on."""
+    value = (2 if right else 0) + (1 if on else 0)
+    return _write(F_COMPARTMENTS, TYPE_ENUM, bytes([value]))
 
 
 def cmd_setpoint(right: bool, value: int) -> bytes:
@@ -364,7 +363,7 @@ def decode_state(frames: list[Frame]) -> dict[str, object]:
                 (F_USB_C_INPUT, "usb_c_input"),
                 (F_DC_INPUT, "dc_input"),
                 (F_INPUT_3C, "input_3c"),
-                (F_INPUT_3D, "input_3d"),
+                (F_SOLAR_INPUT, "solar_input"),
                 (F_INPUT_3E, "input_3e"),
                 (F_PORT_POWER, "port_power"),
             ):

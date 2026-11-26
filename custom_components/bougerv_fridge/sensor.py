@@ -176,8 +176,17 @@ SENSORS: tuple[BougeRVSensorDescription, ...] = (
         value_fn=_get("port_power"),
         battery=True,
     ),
-    # Input-power fields that have read 0 W in every capture so far; one is
-    # expected to be the solar input. Disabled by default until identified.
+    BougeRVSensorDescription(
+        key="solar_input",
+        translation_key="solar_input",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        value_fn=_get("solar_input"),
+        battery=True,
+    ),
+    # Input-power fields that have read 0 W in every capture so far.
+    # Disabled by default until identified.
     *(
         BougeRVSensorDescription(
             key=f"input_{suffix}",
@@ -190,7 +199,7 @@ SENSORS: tuple[BougeRVSensorDescription, ...] = (
             value_fn=_get(f"input_{suffix}"),
             battery=True,
         )
-        for suffix in ("3c", "3d", "3e")
+        for suffix in ("3c", "3e")
     ),
 )
 

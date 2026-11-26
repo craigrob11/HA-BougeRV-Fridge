@@ -99,9 +99,6 @@
       "input_3c": {
         "name": "Unidentified input 3C"
       },
-      "input_3d": {
-        "name": "Unidentified input 3D"
-      },
       "input_3e": {
         "name": "Unidentified input 3E"
       },
@@ -137,6 +134,9 @@
       },
       "cell_5": {
         "name": "Cell 5 voltage"
+      },
+      "solar_input": {
+        "name": "Solar input"
       }
     },
     "switch": {
@@ -178,7 +178,7 @@
       "message": "The fridge's current compartment state is not known yet; try again after the next update."
     },
     "both_compartments_off": {
-      "message": "Turning both compartments off individually has not been tested yet. Use the main Power switch instead."
+      "message": "The fridge can't have both compartments off. Use the main power switch to turn it off."
     },
     "bad_test_command": {
       "message": "Type the field and value in hex, separated by a space, for example: 12 01"

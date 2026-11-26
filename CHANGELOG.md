@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Fixed left/right compartment switches.** The fridge takes a per-side
+  command (0 left off, 1 left on, 2 right off, 3 right on), not the bitmask it
+  reports. The old switches turned the wrong side off.
+- **Solar input** sensor (field 0x3D), confirmed in van tests.
+- Compressor and External power are confirmed and now enabled by default.
+- Hidden **Test command** tool for decoding raw settings.
+
 - **Phone alerts blueprint**: warm compartment, switched off, offline, external
   power lost, low battery, with optional "back to normal" messages. Critical
   alert level (sounds on silent) by default.

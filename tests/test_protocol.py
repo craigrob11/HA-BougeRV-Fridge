@@ -65,9 +65,11 @@ def test_commands_match_confirmed_app_captures():
         p.read_request(): "55AA 0120 0000 20",
         p.cmd_main_power(False): "55AA 0121 0005 0101 0001 0029",
         p.cmd_main_power(True): "55AA 0121 0005 0101 0001 012A",
-        p.cmd_compartments(0b10): "55AA 0121 0005 1204 0001 023F",  # left off
-        p.cmd_compartments(0b01): "55AA 0121 0005 1204 0001 013E",  # right off
-        p.cmd_compartments(0b11): "55AA 0121 0005 1204 0001 0340",  # both on
+        # Compartments, confirmed with the Test command in the van.
+        p.cmd_compartment(right=False, on=False): "55AA 0121 0005 1204 0001 003D",
+        p.cmd_compartment(right=False, on=True): "55AA 0121 0005 1204 0001 013E",
+        p.cmd_compartment(right=True, on=False): "55AA 0121 0005 1204 0001 023F",
+        p.cmd_compartment(right=True, on=True): "55AA 0121 0005 1204 0001 0340",
         p.cmd_mode("Eco"): "55AA 0121 0005 0B04 0001 0036",
         p.cmd_mode("Max"): "55AA 0121 0005 0B04 0001 0137",
         p.cmd_protection("Low"): "55AA 0121 0005 0704 0001 0032",
@@ -85,14 +87,6 @@ def test_commands_match_confirmed_app_captures():
     }
     for built, expected in confirmed.items():
         assert built == h(expected), (built.hex(), expected)
-
-
-def test_both_compartments_off_is_refused():
-    try:
-        p.cmd_compartments(0)
-    except p.ProtocolError:
-        return
-    raise AssertionError("mask 0 should be refused until it has been captured")
 
 
 def test_battery_soc_from_full_status_frame():
@@ -234,7 +228,11 @@ def test_no_battery_fridge_reports_no_battery():
 
 
 def test_battery_fridge_reports_battery_present():
-    full = [p.parse_frame(r) for r in FRAMES if p.parse_frame(r).fields().get(p.F_PORT_POWER) is not None]
+    full = [
+        p.parse_frame(r)
+        for r in FRAMES
+        if p.parse_frame(r).fields().get(p.F_PORT_POWER) is not None
+    ]
     assert full
     for f in full:
         assert p.decode_state([f])["battery_present"] is True

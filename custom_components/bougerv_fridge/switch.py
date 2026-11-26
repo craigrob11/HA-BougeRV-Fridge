@@ -13,7 +13,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
 from .entity import BougeRVEntity
-from .protocol import LEFT_BIT, RIGHT_BIT, cmd_compartments, cmd_main_power
+from .protocol import LEFT_BIT, RIGHT_BIT, cmd_compartment, cmd_main_power
 
 
 async def async_setup_entry(
@@ -53,8 +53,9 @@ class MainPowerSwitch(BougeRVEntity, SwitchEntity):
 class CompartmentSwitch(BougeRVEntity, SwitchEntity):
     """Left or right compartment.
 
-    Both compartments share one setting (a bitmask), so each command must
-    carry the other compartment's current state.
+    The fridge never leaves both sides off (it switches the other side on
+    instead), so turning off the last side that is on is refused here; use
+    the main power switch for that.
     """
 
     _attr_device_class = SwitchDeviceClass.SWITCH
@@ -64,6 +65,7 @@ class CompartmentSwitch(BougeRVEntity, SwitchEntity):
     ) -> None:
         super().__init__(coordinator, translation_key)
         self._bit = bit
+        self._right = bit == RIGHT_BIT
         self._state_key = state_key
         self._attr_translation_key = translation_key
 
@@ -71,27 +73,20 @@ class CompartmentSwitch(BougeRVEntity, SwitchEntity):
     def is_on(self) -> bool | None:
         return (self.coordinator.data or {}).get(self._state_key)
 
-    def _current_mask(self) -> int:
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        await self.coordinator.async_send(cmd_compartment(self._right, True))
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
         mask = (self.coordinator.data or {}).get("compartments")
         if mask is None:
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="state_unknown"
             )
-        return mask
-
-    async def async_turn_on(self, **kwargs: Any) -> None:
-        mask = self._current_mask() | self._bit
-        await self.coordinator.async_send(cmd_compartments(mask))
-
-    async def async_turn_off(self, **kwargs: Any) -> None:
-        mask = self._current_mask() & ~self._bit & (LEFT_BIT | RIGHT_BIT)
-        if mask == 0:
-            # Both compartments off has never been captured from the BougeRV
-            # app, so it is not sent until it has been tested.
+        if not mask & ~self._bit & (LEFT_BIT | RIGHT_BIT):
             raise HomeAssistantError(
                 translation_domain=DOMAIN, translation_key="both_compartments_off"
             )
-        await self.coordinator.async_send(cmd_compartments(mask))
+        await self.coordinator.async_send(cmd_compartment(self._right, False))
 
 
 class LiveCaptureSwitch(BougeRVEntity, SwitchEntity):

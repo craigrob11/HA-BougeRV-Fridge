@@ -37,6 +37,7 @@ BATTERY_KEYS = (
     "port_power",
     "input_3c",
     "input_3d",
+    "solar_input",
     "input_3e",
     "pack_voltage",
     "battery_current",

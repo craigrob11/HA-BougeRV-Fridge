@@ -117,10 +117,9 @@ tap **"+N entities not shown"**, select the entity → settings cog → **Enable
 
 ## Known limits
 
-* Turning **both** compartments off individually is blocked until it has been
-  tested; use the main Power switch instead.
-* Solar input is not decoded yet. Three unidentified input-power sensors
-  (disabled by default) are included to help find it.
+* The fridge won't have both compartments off, so turning off the last one
+  that is on is refused; use the main Power switch instead.
+* The lid/light is not reported by the fridge, so there is no lid sensor.
 * Tested on a CRD2 2.0 (fridge firmware 1.0.2, battery firmware 0.1.8).
   Reports from other models are very welcome.
 

@@ -25,7 +25,7 @@ CHARGING_THRESHOLD_W = 1
 def _charging(data: dict[str, Any]) -> bool | None:
     inputs = [
         data.get(k)
-        for k in ("dc_input", "usb_c_input", "input_3c", "input_3d", "input_3e")
+        for k in ("dc_input", "usb_c_input", "solar_input", "input_3c", "input_3e")
     ]
     known = [w for w in inputs if w is not None]
     if not known:
@@ -63,7 +63,6 @@ BINARY_SENSORS: tuple[BougeRVBinaryDescription, ...] = (
         translation_key="compressor",
         device_class=BinarySensorDeviceClass.RUNNING,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,  # unconfirmed
         value_fn=lambda d: d.get("compressor"),
     ),
     BougeRVBinaryDescription(
@@ -71,7 +70,6 @@ BINARY_SENSORS: tuple[BougeRVBinaryDescription, ...] = (
         translation_key="external_power",
         device_class=BinarySensorDeviceClass.PLUG,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,  # unconfirmed
         value_fn=lambda d: d.get("external_power"),
         battery=True,
     ),
