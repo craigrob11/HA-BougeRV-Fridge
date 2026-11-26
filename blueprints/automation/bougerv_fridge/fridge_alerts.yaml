@@ -74,6 +74,18 @@ blueprint:
           default: default
           selector:
             text:
+        repeat_minutes:
+          name: Repeat the alert until fixed
+          description: >-
+            Send the alert again every this many minutes until the problem
+            clears (for up to 24 hours). 0 = send it once.
+          default: 0
+          selector:
+            number:
+              min: 0
+              max: 60
+              step: 1
+              unit_of_measurement: min
         all_clear:
           name: Send "back to normal" messages
           default: true
@@ -249,6 +261,7 @@ variables:
   notify_devices: !input notify_devices
   alert_level: !input alert_level
   alert_sound: !input alert_sound
+  repeat_minutes: !input repeat_minutes
   all_clear: !input all_clear
   ents: "{{ device_entities(fridge) }}"
   left_t: "{{ ents | select('match', '^sensor[.].*_left_temperature$') | first | default('') }}"
@@ -315,31 +328,62 @@ actions:
             message: "{{ alert.message }}"
             data: "{{ push_data }}"
   - condition: template
+    value_template: "{{ all_clear or repeat_minutes | int(0) > 0 }}"
+  # Wait for whatever caused this alert to clear. With "repeat" on, resend the
+  # alert every repeat_minutes meanwhile; give up after 24 hours.
+  - repeat:
+      sequence:
+        - wait_template: &cleared >-
+            {% set t = trigger.id %}
+            {% if t in ['left_warm', 'right_warm'] %}
+              {{ is_number(states(temp_e)) and is_number(states(set_e))
+                 and states(temp_e) | float <= states(set_e) | float + 1 }}
+            {% elif t == 'main_off' %}
+              {{ is_state(main_p, 'on') }}
+            {% elif t == 'left_off' %}
+              {{ is_state(left_c, 'on') or is_state(main_p, 'off') }}
+            {% elif t == 'right_off' %}
+              {{ is_state(right_c, 'on') or is_state(main_p, 'off') }}
+            {% elif t == 'offline' %}
+              {{ not is_state(left_t, 'unavailable') }}
+            {% elif t == 'external_lost' %}
+              {{ is_state(ext_p, 'on') }}
+            {% else %}
+              {{ is_number(states(batt)) and states(batt) | float >= battery_threshold | float + 5 }}
+            {% endif %}
+          timeout: >-
+            {{ (repeat_minutes | int(0) * 60) if repeat_minutes | int(0) > 0 else 86400 }}
+          continue_on_timeout: true
+        - if:
+            - condition: template
+              value_template: "{{ repeat_minutes | int(0) > 0 }}"
+            - condition: not
+              conditions:
+                - condition: template
+                  value_template: *cleared
+          then:
+            - repeat:
+                for_each: "{{ notify_devices }}"
+                sequence:
+                  - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+                    continue_on_error: true
+                    data:
+                      title: "{{ alert.title }}"
+                      message: "{{ alert.message }}"
+                      data: "{{ push_data }}"
+      until:
+        - condition: or
+          conditions:
+            - condition: template
+              value_template: *cleared
+            - condition: template
+              value_template: >-
+                {{ repeat_minutes | int(0) == 0
+                   or repeat.index * repeat_minutes | int(0) >= 1440 }}
+  - condition: template
+    value_template: *cleared
+  - condition: template
     value_template: "{{ all_clear }}"
-  # Wait for whatever caused this alert to clear, then send "back to normal".
-  - wait_for_trigger:
-      - trigger: template
-        value_template: >-
-          {% set t = trigger.id %}
-          {% if t in ['left_warm', 'right_warm'] %}
-            {{ is_number(states(temp_e)) and is_number(states(set_e))
-               and states(temp_e) | float <= states(set_e) | float + 1 }}
-          {% elif t == 'main_off' %}
-            {{ is_state(main_p, 'on') }}
-          {% elif t == 'left_off' %}
-            {{ is_state(left_c, 'on') or is_state(main_p, 'off') }}
-          {% elif t == 'right_off' %}
-            {{ is_state(right_c, 'on') or is_state(main_p, 'off') }}
-          {% elif t == 'offline' %}
-            {{ not is_state(left_t, 'unavailable') }}
-          {% elif t == 'external_lost' %}
-            {{ is_state(ext_p, 'on') }}
-          {% else %}
-            {{ is_number(states(batt)) and states(batt) | float >= battery_threshold | float + 5 }}
-          {% endif %}
-    timeout:
-      hours: 24
-    continue_on_timeout: false
   - variables:
       clear_msg: >-
         {% set t = trigger.id %}

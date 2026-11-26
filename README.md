@@ -73,7 +73,8 @@ A ready-made automation that sends phone notifications when:
 * the external 12 V supply is lost (battery models)
 * the internal battery is low
 
-plus optional "back to normal" messages.
+plus optional "back to normal" messages, a choice of iPhone alert sound, and an
+optional repeat every few minutes until the problem is fixed.
 
 [![Import blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fcraigrob11%2FHA-BougeRV-Fridge%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fbougerv_fridge%2Ffridge_alerts.yaml)
 
