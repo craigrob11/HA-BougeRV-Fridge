@@ -13,7 +13,7 @@
   sending raw settings. Turn it on again after updating if you use them.
 - No lid sensor: van tests showed the fridge does not report the lid or light.
 
-- **Phone alerts blueprint**: warm compartment, switched off, offline, external
+- **Phone alerts blueprint** (choose the iPhone alert sound): warm compartment, switched off, offline, external
   power lost, low battery, with optional "back to normal" messages. Critical
   alert level (sounds on silent) by default.
 - Fridges without the internal battery: if the battery option is ticked by
