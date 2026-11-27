@@ -1,25 +1,34 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
 
-- **Fixed left/right compartment switches.** The fridge takes a per-side
-  command (0 left off, 1 left on, 2 right off, 3 right on), not the bitmask it
-  reports. The old switches turned the wrong side off.
-- **Solar input** sensor (field 0x3D), confirmed in van tests.
-- **USB output** sensor: total port power (0x42) minus the inputs.
-- Compressor and External power are confirmed and now enabled by default.
-- **Show test tools** option under *Configure* (off by default). The test
-  tools only exist when it is on, and include a new **Test command** for
-  sending raw settings. Turn it on again after updating if you use them.
-- No lid sensor: van tests showed the fridge does not report the lid or light.
+Everything below was confirmed on a CRD2 2.0 with the battery, in the van.
 
-- **Phone alerts blueprint** (choose the iPhone alert sound; optional repeat until fixed): warm compartment, switched off, offline, external
-  power lost, low battery, with optional "back to normal" messages. Critical
-  alert level (sounds on silent) by default.
+**Fixes**
+- **Left/right compartment switches.** The fridge takes a per-side command
+  (0 left off, 1 left on, 2 right off, 3 right on), not the bitmask it
+  reports, so the old switches turned the wrong side off. The fridge won't
+  have both sides off, so turning off the last one is refused; use Power.
 - Fridges without the internal battery: if the battery option is ticked by
-  mistake, battery sensors now show unavailable instead of 0 % (which would
-  also have triggered a false low-battery alert). Found from a tester's
-  diagnostics (CRD2 2.0, firmware 1.0.1).
+  mistake, battery sensors show unavailable instead of 0 % (which would also
+  have triggered a false low-battery alert).
+
+**New**
+- **Solar input** sensor (field 0x3D).
+- **USB-C input** confirmed (field 0x3B).
+- **USB output** sensor: total port power (0x42) minus the inputs.
+- **Compressor** and **External power** confirmed and enabled by default.
+- **Phone alerts blueprint:** compartment warm, fridge or compartment
+  switched off, offline, external 12 V lost, low battery. Critical alerts
+  (sound on silent) by default, choice of iPhone sound, optional repeat until
+  fixed, and optional "back to normal" messages.
+- **Show test tools** option under *Configure* (off by default) for decoding:
+  Live capture, capture marker and note, and a new Test command. If you used
+  the tools before, turn the option on after updating.
+- Brand icon now fills its square.
+
+**Not possible**
+- Lid/light: the fridge does not report it, so there is no lid sensor.
 
 ## 1.0.0 (first public release)
 
